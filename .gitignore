@@ -1,0 +1,30 @@
+# PyCharm
+.idea/
+
+# Ambiente virtual
+venv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+
+# Variáveis de ambiente (credenciais de banco etc.)
+.env
+.env.local
+
+# Alembic (opcional — normalmente você COMMITA as migrations,
+# só ignore se tiver algum cache/log local)
+# alembic/versions/*.pyc
+
+# Logs
+*.log
+
+# Distribuição / build
+build/
+dist/
+*.egg
