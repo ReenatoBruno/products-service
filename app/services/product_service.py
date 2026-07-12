@@ -8,7 +8,7 @@ from sqlalchemy import select
 from app.exceptions.product_exception import ProductNumberAlreadyExistsError, ProductNotFoundError
 from app.mappers.product_mapper import ProductMapper
 from app.models.product import Product
-from app.repositories.ProductRepository import ProductRepository
+from app.repositories.product_repository import ProductRepository
 from app.schemas.product_schema import ProductRequestDTO, ProductResponseDTO, ProductUpdateDTO
 
 from sqlalchemy.exc import IntegrityError
