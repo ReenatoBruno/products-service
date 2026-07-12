@@ -20,6 +20,7 @@ class ProductRequestDTO(BaseModel):
 
 
 class ProductResponseDTO(BaseModel):
+
     model_config = ConfigDict(from_attributes=True)
 
     product_id: uuid.UUID
@@ -36,16 +37,18 @@ class ProductResponseDTO(BaseModel):
 
     product_description: str | None
 
-    product_active: bool
-
     product_created_at: datetime
 
     product_updated_at: datetime
 
+
+class ProductAdminResponseDTO(ProductResponseDTO):
+
+    product_active: bool
+
     product_created_by: str
 
     product_updated_by: str
-
 
 class ProductUpdateDTO(BaseModel):
 
