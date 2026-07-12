@@ -4,7 +4,7 @@ import uuid
 from app.exceptions.ProductException import ProductNumberAlreadyExistsError, ProductNotFoundError
 from app.mappers.product_mapper import ProductMapper
 from app.models.product import Product
-from app.schemas.product_schema import ProductRequestDTO, ProductResponseDTO
+from app.schemas.product_schema import ProductRequestDTO, ProductResponseDTO, ProductUpdateDTO
 
 from sqlalchemy.exc import IntegrityError
 
@@ -47,6 +47,32 @@ class ProductService:
         product = self._findy_by_product_id(product_id)
 
         return ProductMapper.to_response(product)
+
+    def update(self, product_id: uuid.UUID, dto: ProductUpdateDTO, updated_by: str) -> ProductResponseDTO:
+
+        logger.info("Updating product with ID: %s", product_id)
+
+        product = self._findy_by_product_id(product_id)
+
+        ProductMapper.update_entity(product, dto, updated_by)
+
+        self.repository.save(product)
+
+        logger.info("Product updated successfully with ID: %s", product_id)
+
+        return ProductMapper.to_response(product)
+
+    def delete(self, product_id: uuid.UUID) -> None:
+
+        logger.info("Deleting product with ID: %s", product_id)
+
+        product = self._findy_by_product_id(product_id)
+
+        product.deactivate()
+
+        self.repository.save(product)
+
+        logger.info("Product deleted successfully with ID: %s", product_id)
 
     def _findy_by_product_id(self, product_id: uuid.UUID) -> Product:
 
