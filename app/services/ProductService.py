@@ -23,15 +23,11 @@ class ProductService:
 
         logger.info('Checking if product number already exists %s', dto.product_number)
 
-        if self.repository.exists_by_product_number(dto.product_number):
-            logger.warning(
-                'Product number already exists: %s', dto.product_number
-            )
-            raise ProductNumberAlreadyExistsError(dto.product_number)
+        self._ensure_product_number_available(dto.product_number)
 
         product = ProductMapper.to_entity(dto, created_by)
 
-        self._save_created_product(product)
+        await self._save_created_product(product)
 
         return ProductMapper.to_response(product)
 
@@ -39,11 +35,12 @@ class ProductService:
 
         logger.info('Fetching products with ID: %s', product_id)
 
-        product = self._find_by_product_id(product_id)
+        product = await self._find_by_product_id(product_id)
 
         return ProductMapper.to_response(product)
 
     async def get_all(self, product_name: str | None) -> Page[ProductResponseDTO]:
+
         logger.debug("Fetching all products with filter product name %s", product_name)
 
         query = select(Product)
@@ -62,11 +59,11 @@ class ProductService:
 
         logger.info("Updating product with ID: %s", product_id)
 
-        product = self._find_by_product_id(product_id)
+        product = await self._find_by_product_id(product_id)
 
         ProductMapper.update_entity(product, dto, updated_by)
 
-        self.repository.save(product)
+        await self.repository.save(product)
 
         logger.info("Product updated successfully with ID: %s", product_id)
 
@@ -76,22 +73,22 @@ class ProductService:
 
         logger.info("Deleting product with ID: %s", product_id)
 
-        product = self._find_by_product_id(product_id)
+        product = await self._find_by_product_id(product_id)
 
         product.deactivate()
 
-        self.repository.save(product)
+        await self.repository.save(product)
 
         logger.info("Product deleted successfully with ID: %s", product_id)
 
-    def _ensure_product_number_available(self, product_number: str) -> None:
-        if self._repository.exists_by_product_number(product_number):
+    async def _ensure_product_number_available(self, product_number: str) -> None:
+        if await self._repository.exists_by_product_number(product_number):
             logger.warning("Product number already exists: %s", product_number)
             raise ProductNumberAlreadyExistsError(product_number)
 
     async def _save_created_product(self, product: Product) -> None:
         try:
-            self._repository.save(product)
+            await self._repository.save(product)
         except IntegrityError as error:
             logger.error(
                 "Data integrity violation while creating product %s",
@@ -100,7 +97,7 @@ class ProductService:
             raise ProductNumberAlreadyExistsError(product.product_number) from error
 
     async def _find_by_product_id(self, product_id: uuid.UUID) -> Product:
-        product = self.repository.find_by_id(product_id)
+        product = await self.repository.find_by_id(product_id)
         if product is None:
             raise ProductNotFoundError(product_id)
 
