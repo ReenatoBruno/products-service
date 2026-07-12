@@ -40,6 +40,14 @@ class ProductService:
         )
         return ProductMapper.to_response(product)
 
+    def get_by_id(self, product_id: uuid.UUID) -> ProductResponseDTO:
+
+        logger.info('Fetching products with ID: %s', product_id)
+
+        product = self._findy_by_product_id(product_id)
+
+        return ProductMapper.to_response(product)
+
     def _findy_by_product_id(self, product_id: uuid.UUID) -> Product:
 
         product = self.repository.find_by_id(product_id)
