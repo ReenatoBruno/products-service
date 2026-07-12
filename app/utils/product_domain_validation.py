@@ -1,7 +1,6 @@
 import re
 from decimal import Decimal
 
-
 class ProductDomainValidation:
 
     @staticmethod
@@ -65,6 +64,7 @@ class ProductDomainValidation:
     def require_non_blank_if_present(value: str | None,
                                      field : str,
                                      max_length: int) -> str | None:
+
         if value is None:
             return None
 
