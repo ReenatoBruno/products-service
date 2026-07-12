@@ -8,6 +8,7 @@ from sqlalchemy import select
 from app.exceptions.product_exception import ProductNumberAlreadyExistsError, ProductNotFoundError
 from app.mappers.product_mapper import ProductMapper
 from app.models.product import Product
+from app.repositories.ProductRepository import ProductRepository
 from app.schemas.product_schema import ProductRequestDTO, ProductResponseDTO, ProductUpdateDTO
 
 from sqlalchemy.exc import IntegrityError
@@ -98,6 +99,7 @@ class ProductService:
 
     async def _find_by_product_id(self, product_id: uuid.UUID) -> Product:
         product = await self.repository.find_by_id(product_id)
+
         if product is None:
             raise ProductNotFoundError(product_id)
 
