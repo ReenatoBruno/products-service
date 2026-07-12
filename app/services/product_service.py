@@ -23,7 +23,7 @@ class ProductService:
 
         logger.info('Checking if product number already exists %s', dto.product_number)
 
-        self._ensure_product_number_available(dto.product_number)
+        await self._ensure_product_number_available(dto.product_number)
 
         product = ProductMapper.to_entity(dto, created_by)
 
@@ -88,7 +88,7 @@ class ProductService:
 
     async def _save_created_product(self, product: Product) -> None:
         try:
-            await self._repository.save(product)
+            await self.repository.save(product)
         except IntegrityError as error:
             logger.error(
                 "Data integrity violation while creating product %s",
