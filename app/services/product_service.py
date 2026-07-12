@@ -5,7 +5,7 @@ from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import select
 
-from app.exceptions.ProductException import ProductNumberAlreadyExistsError, ProductNotFoundError
+from app.exceptions.product_exception import ProductNumberAlreadyExistsError, ProductNotFoundError
 from app.mappers.product_mapper import ProductMapper
 from app.models.product import Product
 from app.schemas.product_schema import ProductRequestDTO, ProductResponseDTO, ProductUpdateDTO
@@ -46,8 +46,8 @@ class ProductService:
         query = select(Product)
         normalized_product_name = product_name.strip() if product_name else None
 
-        if normalized_product_name():
-            query = query.where(Product.product_name.ilike(f"%{product_name}%"))
+        if normalized_product_name:
+            query = query.where(Product.product_name.ilike(f"%{normalized_product_name}%"))
 
         return await paginate(
             self.repository.session,
@@ -82,7 +82,7 @@ class ProductService:
         logger.info("Product deleted successfully with ID: %s", product_id)
 
     async def _ensure_product_number_available(self, product_number: str) -> None:
-        if await self._repository.exists_by_product_number(product_number):
+        if await self.repository.exists_by_product_number(product_number):
             logger.warning("Product number already exists: %s", product_number)
             raise ProductNumberAlreadyExistsError(product_number)
 
