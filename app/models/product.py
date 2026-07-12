@@ -43,7 +43,6 @@ class Product(Base):
 
     product_description: Mapped[str | None] = mapped_column(
         String(MAX_PRODUCT_DESCRIPTION_LENGTH), nullable=True
-
     )
 
     product_active: Mapped[bool] = mapped_column(
@@ -62,19 +61,63 @@ class Product(Base):
         String(100), nullable=False
     )
 
-    product_updated_by = Mapped[str] = mapped_column(
+    product_updated_by: Mapped[str] = mapped_column(
         String(100), nullable=False
     )
 
-    @validates("product_number")
+    @validates('product_number')
     def validate_product_number(self, key: str, value: str) -> str:
         normalized_product_number = ProductDomainValidation.normalize(value)
         upper =  normalized_product_number.upper() if normalized_product_number is not None else None
-        return ProductDomainValidation.require_valid_product_number(upper, "Product Number", MAX_PRODUCT_NUMBER_LENGTH)
-
-    @validates("product_name")
-    def validate_product_name(self, key: str, value: str) -> str:
-        normalized_name = ProductDomainValidation.normalize(value)
-        return ProductDomainValidation.require_non_blank(normalized_name, 'Product Name', MAX_PRODUCT_NAME_LENGTH
+        return ProductDomainValidation.require_valid_product_number(upper, 'Product Number', MAX_PRODUCT_NUMBER_LENGTH
     )
 
+    @validates('product_name')
+    def validate_product_name(self, key: str, value: str) -> str:
+        normalized_name = ProductDomainValidation.normalize(value)
+        capitalize_case = normalized_name.capitalize() if normalized_name is not None else None
+        return ProductDomainValidation.require_non_blank(capitalize_case, 'Product Name', MAX_PRODUCT_NAME_LENGTH
+    )
+
+    @validates('product_price')
+    def validate_positive_price(self, key: str, value: Decimal | None) -> Decimal:
+        normalized_price = None if value is None else value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        return ProductDomainValidation.require_positive_price(normalized_price, 'Price'
+    )
+
+    @validates('quantity')
+    def validate_positive_quantity(self, key: str, value: int) -> int:
+        return ProductDomainValidation.require_positive_quantity(value, 'Quantity'
+    )
+
+    @validates('supplier')
+    def validate_supplier(self, key: str, value: str) -> str:
+        normalized_supplier = ProductDomainValidation.normalize(value)
+        title_case = normalized_supplier.title() if normalized_supplier is not None else None
+        return ProductDomainValidation.require_non_blank(title_case, 'Supplier', MAX_SUPPLIER_NAME_LENGTH
+    )
+
+    @validates('product_description')
+    def validate_description(self, key: str, value: str) -> str | None:
+        normalized_description = ProductDomainValidation.normalize(value)
+        capitalize_case = normalized_description.capitalize() if normalized_description is not None else None
+        return ProductDomainValidation.require_non_blank_if_present(capitalize_case, 'Description', MAX_PRODUCT_DESCRIPTION_LENGTH
+    )
+
+    def deactivate(self) -> None:
+        self.product_active = False
+
+    def update_fields(self, product_name: str, product_price: Decimal, quantity: int, supplier: str, product_description: str | None) -> None:
+        self.product_name = product_name
+        self.product_price = product_price
+        self.quantity = quantity
+        self.supplier = supplier
+        self.product_description = product_description
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Product):
+            return False
+        return self.product_number is not None and self.product_number == other.product_number
+
+    def __hash__(self) -> int:
+        return hash(self.product_number)
